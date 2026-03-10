@@ -96,8 +96,23 @@ app.get("/orders/:id/file", (req, res) => {
     }
   });
 });
+/** Delete order */
+app.delete("/orders/:id", (req, res) => {
+  const orderId = req.params.id;
 
-/** Create order (new) with optional file + description/note */
+  const info = db.prepare("DELETE FROM orders WHERE id = ?").run(orderId);
+
+  if (info.changes === 0) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  // order_items varsa onları da silmek iyi olur
+  db.prepare("DELETE FROM order_items WHERE orderId = ?").run(orderId);
+
+  res.json({ ok: true });
+});
+
+
 app.post("/orders", upload.single("file"), (req, res) => {
   const {
     id,

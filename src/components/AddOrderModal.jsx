@@ -11,7 +11,6 @@ const ACCEPT =
 export default function AddOrderModal({ open, onClose, onSubmit }) {
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
-  const [createdBy, setCreatedBy] = useState(""); // ✅ yeni alan
   const fileInputRef = useRef(null);
 
   const allowedExt = useMemo(
@@ -23,9 +22,25 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
     if (!open) {
       setFile(null);
       setDescription("");
-      setCreatedBy(""); // ✅ modal kapanınca temizle
+      return;
     }
-  }, [open]);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -40,9 +55,12 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
 
     if (!validateFile(f)) {
       alert("Desteklenmeyen dosya türü. (.xls .xlsx .doc .docx .png .jpeg .jpg)");
-      if (clearInput && fileInputRef.current) fileInputRef.current.value = "";
+      if (clearInput && fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
+
     setFile(f);
   };
 
@@ -56,7 +74,9 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
     const f = e.dataTransfer.files?.[0];
     setValidatedFile(f);
 
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleUpload = () => {
@@ -65,16 +85,26 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
     onSubmit?.({
       file,
       description,
-      createdBy, // ✅ buradan dışarı gönderiyoruz
     });
   };
 
   return (
-    <div className="modalOverlay" onMouseDown={onClose}>
+    <div
+      className="modalOverlay"
+      onMouseDown={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-order-modal-title"
+    >
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modalHeader">
-          <h2>Sipariş Ekle</h2>
-          <button className="iconBtn" onClick={onClose} aria-label="Kapat">
+          <h2 id="add-order-modal-title">Sipariş Ekle</h2>
+          <button
+            type="button"
+            className="iconBtn"
+            onClick={onClose}
+            aria-label="Kapat"
+          >
             ✕
           </button>
         </div>
@@ -87,8 +117,9 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ")
+            if (e.key === "Enter" || e.key === " ") {
               fileInputRef.current?.click();
+            }
           }}
         >
           <div className="dropTitle">Dosyayı buraya sürükle bırak</div>
@@ -110,10 +141,13 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
           <div className="fileRow">
             <div className="fileName">📎 {file.name}</div>
             <button
+              type="button"
               className="linkBtn"
               onClick={() => {
                 setFile(null);
-                if (fileInputRef.current) fileInputRef.current.value = "";
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
               }}
             >
               Kaldır
@@ -121,19 +155,10 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
           </div>
         )}
 
-        {/* ✅ Oluşturan kişi */}
         <div className="formGroup">
-          <label>Oluşturan Kişi</label>
-          <input
-            value={createdBy}
-            onChange={(e) => setCreatedBy(e.target.value)}
-          />
-        </div>
-
-        {/* ✅ Açıklama */}
-        <div className="formGroup">
-          <label>Açıklama</label>
+          <label htmlFor="order-description">Açıklama</label>
           <textarea
+            id="order-description"
             placeholder="Sipariş ile ilgili not giriniz..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -142,10 +167,16 @@ export default function AddOrderModal({ open, onClose, onSubmit }) {
         </div>
 
         <div className="modalFooter">
-          <button className="btnGhost" onClick={onClose}>
+          <button type="button" className="btnGhost" onClick={onClose}>
             Vazgeç
           </button>
-          <button className="btnPrimarySolid" disabled={!file} onClick={handleUpload}>
+
+          <button
+            type="button"
+            className="btnPrimarySolid"
+            disabled={!file}
+            onClick={handleUpload}
+          >
             Yükle
           </button>
         </div>

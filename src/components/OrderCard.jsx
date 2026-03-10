@@ -1,9 +1,26 @@
 import { API_BASE } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
-// import { useDraggable } from "@dnd-kit/core";
+function statusLabel(status) {
+  if (status === "new") return "Gelen";
+  if (status === "preparing") return "Hazırlanıyor";
+  if (status === "completed") return "Tamamlandı";
+  return status || "-";
+}
 
-export default function OrderCard({ order, onPrepare, onComplete, onOpenDetail }) {
+export default function OrderCard({
+  order,
+  onPrepare,
+  onComplete,
+  onOpenDetail,
+  onDelete,
+}) {
   const hasFile = Boolean(order?.fileName && order?.fileStoredName);
+  const navigate = useNavigate();
+
+  const openContent = () => {
+    navigate(`/order/${encodeURIComponent(order.id)}/content`);
+  };
 
   return (
     <div className="card">
@@ -14,62 +31,78 @@ export default function OrderCard({ order, onPrepare, onComplete, onOpenDetail }
       <div className="cardTitle">{order.customer || "—"}</div>
 
       <div className="cardMeta">
-        <span>🕒 {order.createdAt}</span>
+        <span>🕒 {order.createdAt || "-"}</span>
+        {order.status && <span>📌 {statusLabel(order.status)}</span>}
       </div>
 
-      {/* ✅ Dosya linki */}
       {hasFile && (
         <a
           className="fileLink"
-          href={`${API_BASE}/orders/${encodeURIComponent(order.id)}/file`}
+          href={`${API_BASE}/download-order-file.php?id=${encodeURIComponent(order.id)}`}
           title="Dosyayı indir"
+          target="_blank"
+          rel="noreferrer"
         >
           📎 {order.fileName}
         </a>
       )}
 
-      {/* ✅ Açıklama */}
       {order.note && <div className="cardNote">{order.note}</div>}
 
-      {/* ✅ Gelen (new) */}
       {order.status === "new" && (
-        <button className="btnPrimary" onClick={() => onPrepare?.(order.id)}>
-          Siparişi Hazırla
-        </button>
+        <>
+          <button
+            type="button"
+            className="btnPrimary"
+            onClick={() => onPrepare?.(order.id)}
+          >
+            Siparişi Hazırla
+          </button>
+
+          <button
+            type="button"
+            className="btnGhostFull"
+            onClick={() => onDelete?.(order.id)}
+          >
+            Sil
+          </button>
+        </>
       )}
 
-      {/* ✅ Hazırlanıyor (preparing) */}
       {order.status === "preparing" && (
         <>
           <button
+            type="button"
             className="btnPrimary"
-            onClick={() =>
-              window.open(
-                `/order/${encodeURIComponent(order.id)}/content`,
-                "_blank",
-                "noopener,noreferrer"
-              )
-            }
+            onClick={openContent}
           >
             İçerik Oluştur
           </button>
 
           <button
-            className="btnPrimarySolid"
+            type="button"
+            className="btnPrimarySolidFull"
             onClick={() => onComplete?.(order.id)}
           >
             Tamamla
           </button>
 
-          <button className="btnGhostFull" onClick={() => onOpenDetail?.(order)}>
+          <button
+            type="button"
+            className="btnGhostFull"
+            onClick={() => onOpenDetail?.(order)}
+          >
             Detayları Gör
           </button>
         </>
       )}
 
-      {/* ✅ Tamamlanan (completed) */}
       {order.status === "completed" && (
-        <button className="btnGhostFull" onClick={() => onOpenDetail?.(order)}>
+        <button
+          type="button"
+          className="btnGhostFull"
+          onClick={() => onOpenDetail?.(order)}
+        >
           Detayları Gör
         </button>
       )}

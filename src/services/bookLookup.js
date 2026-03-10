@@ -1,15 +1,16 @@
-import { API_BASE } from "./api";
+import { apiGet } from "./api";
 
 export function normalizeIsbn(value = "") {
-  return value.replace(/[-\s]/g, "").trim();
+  return String(value).replace(/[-\s]/g, "").trim();
 }
 
-export async function findBookByIsbn(isbnRaw) {
-  const isbn = normalizeIsbn(isbnRaw);
-  if (!isbn) return null;
+export async function findBookByIsbn(isbn) {
+  const normalized = normalizeIsbn(isbn);
+  if (!normalized) return null;
 
-  const res = await fetch(`${API_BASE}/books/by-isbn/${encodeURIComponent(isbn)}`);
-  if (!res.ok) return null;
-
-  return res.json(); // {isbn, title, location}
+  try {
+    return await apiGet(`/book-by-isbn.php?isbn=${encodeURIComponent(normalized)}`);
+  } catch (e) {
+    return null;
+  }
 }

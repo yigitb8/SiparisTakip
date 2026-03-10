@@ -1,5 +1,5 @@
 export const COLUMNS = [
-  { id: "new", title: "Yeni Siparişler" },
+  { id: "new", title: "Gelen" },
   { id: "preparing", title: "Hazırlanıyor" },
   { id: "completed", title: "Tamamlandı" },
 ];
@@ -15,15 +15,6 @@ export const MOCK_ORDERS = [
     note: "Kapıda ödeme",
   },
   {
-    id: "SP-1002",
-    customer: "Zeynep Kaya",
-    total: 890,
-    itemsCount: 1,
-    status: "pending",
-    createdAt: "2026-03-02 09:40",
-    note: "Adres teyidi gerekli",
-  },
-  {
     id: "SP-1003",
     customer: "Mehmet Demir",
     total: 2199,
@@ -31,6 +22,6 @@ export const MOCK_ORDERS = [
     status: "preparing",
     createdAt: "2026-03-01 18:22",
     note: "",
-  },
+  }
 
 ];

@@ -1,8 +1,20 @@
+import { useDroppable } from "@dnd-kit/core";
 import OrderCard from "./OrderCard";
 
-export default function Column({ column, orders, onPrepare, onComplete, onOpenDetail }) {
+export default function Column({ column, orders, onPrepare, onComplete, onOpenDetail, onDelete }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
   return (
-    <div className="column">
+    <div
+      ref={setNodeRef}
+      className="column"
+      style={{
+        outline: isOver ? "2px dashed #999" : "none",
+        outlineOffset: "4px",
+      }}
+    >
       <div className="columnHeader">
         <div className="columnTitle">{column.title}</div>
         <div className="columnCount">{orders.length}</div>
@@ -14,8 +26,9 @@ export default function Column({ column, orders, onPrepare, onComplete, onOpenDe
             key={o.id}
             order={o}
             onPrepare={onPrepare}
-            onComplete={onComplete}    
+            onComplete={onComplete}
             onOpenDetail={onOpenDetail}
+            onDelete={onDelete}
           />
         ))}
       </div>
